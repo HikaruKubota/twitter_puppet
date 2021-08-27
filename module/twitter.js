@@ -4,23 +4,16 @@ exports.twitterMain = async (keywords, page) => {
   const datas = [];
 
   for (let i = 0; i < keywords.length; i++) {
-    const data = {};
     const keyword = keywords[i][0];
-    data[0] = keyword;
+    const data = {
+      '会社名': keyword
+    };
     try {
       console.log(keyword);
       await gotoPage(keyword, page);
-      Object.assign(data, await getSearchCountPages(page, keyword));
+      Object.assign(data, await getAccountCount(page, keyword));
 
-      const tmp = await getSALARY_rbo(page, keyword, 'job')
-      tmp.forEach(e => {
-        Object.assign(data, e);
-      });
-
-      const tmp2 = await getSALARY_rbo(page, keyword, 'salary')
-      tmp2.forEach(e => {
-        Object.assign(data, e);
-      });
+      console.log(data);
 
       datas.push(data)
     } catch (error) {
@@ -32,45 +25,31 @@ exports.twitterMain = async (keywords, page) => {
 }
 
 gotoPage = async (keyword, page) => {
-
   // + は自動変換
   keyword = keyword.replace(/\+/g, "%2B")
 
   // # は自動変換
   keyword = keyword.replace(/\#/g, "%23")
 
-  //Todo このif文が肥大化していくようであれば別に切り分ける。
-  if(keyword.length == 1) {
-    keyword += "言語";
-  }
-
-  console.log(keyword);
-
-  let url = 'https://jp.twitter.com/求人?q=エンジニア+' + keyword
-  console.log(url);
+  let url = `https://twitter.com/search?q=${keyword}&src=typed_query&f=user`
   await page.goto(url, {waitUntil: "domcontentloaded"});
   await page.waitFor(common.makeForRandomSec());
 }
 
-//求人検索結果 9,777 件中 1 ページ目
-getSearchCountPages = async (page, keyword) => {
-  let item;
-  let searchCountPages;
-
+//
+getAccountCount = async (page, keyword) => {
+  const xpath = '//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div/div/div[2]/div/div/section/div/div'
+  let count = 0;
   try {
-    item = await page.$('#searchCountPages');
-    searchCountPages = await (await item.getProperty('textContent')).jsonValue()
-    searchCountPages = SearchCountPagesReplace(searchCountPages);;
-
+    const result = await page.$x(xpath);
+    count = result.length;
   } catch(e) {
-    console.log(e);
     console.log('検索結果が無かったと思われる。');
     console.log('値は取得できない');
     searchCountPages = 0;
   }
-
-  let data = {
-    '総件数': +searchCountPages
+  const data = {
+    'url': count!=0 ? `https://twitter.com/search?q=${keyword}&src=typed_query&f=user` : 'nothing',
   }
   return data;
 }

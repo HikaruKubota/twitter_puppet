@@ -42,10 +42,9 @@ exports.orgRound = (value, base) => {
   return Math.round(value / base) * base;
 }
 
-//5秒から15秒
+//3~5秒
 exports.makeForRandomSec = () => {
-  const sec = getRandomInt(10) * 1000 + 5000
-  console.log(sec);
+  const sec = getRandomInt(2) * 1000 + 3000
   return sec;
 }
 
