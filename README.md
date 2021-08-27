@@ -1,4 +1,4 @@
 # twitter_puppet
 
-npm i
+npm i <br>
 node main
